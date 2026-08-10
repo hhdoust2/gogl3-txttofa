@@ -1,0 +1,13 @@
+{
+
+  "rewrites": [
+    {
+      "source": "/translate-srt",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/$1"
+    }
+  ]
+}
