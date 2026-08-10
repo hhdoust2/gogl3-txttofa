@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>(Google) مترجم هوشمند زیرنویس SRT</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .card {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h2 { color: #fff; margin-bottom: 24px; }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+        label.group-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a5b4fc;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .file-input-wrapper {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .custom-file-upload {
+            border: 2px dashed #4f46e5;
+            display: inline-block;
+            padding: 16px 20px;
+            cursor: pointer;
+            border-radius: 12px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: all 0.3s;
+            color: #a3a3a3;
+            text-align: center;
+        }
+        .custom-file-upload:hover {
+            background-color: #4f46e5;
+            color: #fff;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            background-color: #252525;
+            border: 1px solid #4b5563;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+        select option {
+            background-color: #252525;
+            color: #fff;
+        }
+
+        button.submit-btn {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-bottom: 10px;
+        }
+        button.submit-btn:hover { background-color: #4338ca; }
+        button.submit-btn:disabled { background-color: #4b5563; cursor: not-allowed; }
+        
+        .download-btn {
+            background-color: #10b981;
+            display: none;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-bottom: 10px;
+        }
+        .download-btn:hover { background-color: #059669; }
+        
+        /* استایل نوار وضعیت پیشرفت */
+        .progress-container {
+            display: none;
+            margin: 20px 0;
+            text-align: right;
+        }
+        .progress-bar-wrapper {
+            background-color: #2d2d2d;
+            border-radius: 10px;
+            height: 12px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-bar {
+            background-color: #4f46e5;
+            height: 100%;
+            width: 0%;
+            transition: width 0.1s linear;
+            border-radius: 10px;
+        }
+        .progress-status {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #a3a3a3;
+        }
+
+        #status {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .loading { color: #f59e0b; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>(Google) مترجم هوشمند زیرنویس SRT</h2>
+    
+    <form id="uploadForm">
+        <div class="file-input-wrapper">
+            <label for="srtFile" class="custom-file-upload" id="file-label">
+                انتخاب فایل زیرنویس (SRT) 📄
+            </label>
+            <input type="file" id="srtFile" accept=".srt" required>
+        </div>
+
+        <div class="form-group">
+            <label for="langTo" class="group-label">ترجمه به زبان:</label>
+            <select id="langTo">
+                <option value="fa">فارسی (Persian)</option>
+                <option value="en">انگلیسی (English)</option>
+                <option value="ar">عربی (Arabic)</option>
+                <option value="tr">ترکی (Turkish)</option>
+            </select>
+        </div>
+
+        <button type="submit" class="submit-btn" id="btnSubmit">شروع ترجمه و ساخت 🚀</button>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-status">
+                <span id="progressState">در حال آماده‌سازی فایل...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar-wrapper">
+                <div class="progress-bar" id="progressBarFill"></div>
+            </div>
+        </div>
+
+        <button type="button" id="btnDownload" class="download-btn">دانلود فایل زیرنویس (SRT) 📥</button>
+    </form>
+
+    <div id="status"></div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('srtFile');
+    const fileLabel = document.getElementById('file-label');
+    const statusDiv = document.getElementById('status');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const btnDownload = document.getElementById('btnDownload');
+    
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBarFill = document.getElementById('progressBarFill');
+    const progressPercent = document.getElementById('progressPercent');
+    const progressState = document.getElementById('progressState');
+
+    let downloadUrl = null;
+    let outputFileName = "";
+
+    fileInput.addEventListener('change', function() {
+        if(this.files && this.files[0]) {
+            const file = this.files[0];
+            fileLabel.textContent = `${file.name}`;
+            fileLabel.style.borderColor = '#10b981';
+        }
+    });
+
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const langTo = document.getElementById('langTo').value;
+
+        if (!fileInput.files.length) return;
+
+        const file = fileInput.files[0];
+        outputFileName = file.name; 
+
+        btnDownload.style.display = 'none';
+        if (downloadUrl) {
+            window.URL.revokeObjectURL(downloadUrl);
+            downloadUrl = null;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async function(event) {
+            const text = event.target.result;
+            const totalLines = (text.match(/-->/g) || []).length;
+            
+            btnSubmit.disabled = true;
+            statusDiv.className = 'loading';
+            statusDiv.innerText = '';
+            
+            progressContainer.style.display = 'block';
+            progressBarFill.style.width = '0%';
+            progressPercent.innerText = '0%';
+            progressState.innerText = 'فایل ارسال شد. در حال ترجمه دیالوگ‌ها...';
+            
+            let currentPercent = 0;
+
+            const estimatedTimeMs = Math.max(totalLines * 40, 3000); 
+            const intervalStep = 100; 
+            const percentIncrement = (intervalStep / estimatedTimeMs) * 92; 
+
+            const progressInterval = setInterval(() => {
+                if (currentPercent < 92) {
+                    currentPercent += percentIncrement;
+                    if (currentPercent > 92) currentPercent = 92;
+                    
+                    const displayPercent = Math.round(currentPercent);
+                    progressBarFill.style.width = `${displayPercent}%`;
+                    progressPercent.innerText = `${displayPercent}%`;
+                    
+                    if (displayPercent >= 92) {
+                        progressState.innerText = 'در حال بازسازی و دریافت فایل نهایی...';
+                    }
+                }
+            }, intervalStep);
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('to', langTo);
+
+            try {
+                const response = await fetch('/translate-srt', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                clearInterval(progressInterval);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.details || 'خطا در ترجمه فایل');
+                }
+
+                progressBarFill.style.width = '100%';
+                progressPercent.innerText = '100%';
+                progressState.innerText = 'ترجمه با موفقیت کامل شد! 🎉';
+
+                const blob = await response.blob();
+                downloadUrl = window.URL.createObjectURL(blob);
+
+                statusDiv.className = 'success';
+                btnDownload.style.display = 'block';
+
+            } catch (error) {
+                clearInterval(progressInterval);
+                progressBarFill.style.width = '0%';
+                progressPercent.innerText = '0%';
+                statusDiv.className = 'error';
+                statusDiv.innerText = 'خطا: ' + error.message;
+                progressState.innerText = 'خطا در عملیات ❌';
+            } finally {
+                btnSubmit.disabled = false;
+            }
+        };
+
+        reader.readAsText(file);
+    });
+
+    btnDownload.addEventListener('click', function() {
+        if (!downloadUrl) return;
+
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `${outputFileName}_Fa.srt`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        this.style.display = 'none';
+        progressContainer.style.display = 'none';
+        statusDiv.className = '';
+        statusDiv.innerText = 'فایل با موفقیت دانلود شد.';
+        
+        // بازنشانی فرم
+        document.getElementById('uploadForm').reset();
+        fileLabel.textContent = 'انتخاب فایل زیرنویس (SRT)';
+        fileLabel.style.borderColor = '#4f46e5';
+    });
+</script>
+
+</body>
+</html>
